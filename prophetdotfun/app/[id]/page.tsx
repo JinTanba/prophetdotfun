@@ -3,7 +3,7 @@ import ProphetClient from "./ProphetClient";
 import type { Prophet } from "@/types/prophet";
 
 async function getProphet(id: string): Promise<Prophet> {
-	const url = new URL(`/api/prophet/${id}`, "http://localhost:3000");
+	const url = new URL(`/api/prophet/${id}`, process.env.NEXT_PUBLIC_API_URL);
 	const response = await fetch(url, {
 		cache: "no-store",
 	});

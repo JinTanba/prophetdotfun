@@ -30,7 +30,9 @@ export async function GET(
 ) {
 	try {
 		const { id } = await params;
-		const response = await fetch(`http://localhost:3000/api/prophet/${id}`);
+		const response = await fetch(
+			`${process.env.NEXT_PUBLIC_API_URL}/api/prophet/${id}`
+		);
 		if (!response.ok) {
 			return new Response(`Prophet not found`, { status: 404 });
 		}
