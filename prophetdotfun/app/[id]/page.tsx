@@ -2,9 +2,12 @@ import { notFound } from "next/navigation";
 import ProphetClient from "./ProphetClient";
 import type { Prophet } from "@/types/prophet";
 
+// baseUrlの設定
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
 async function getProphet(id: string): Promise<Prophet> {
-	const url = new URL(`/api/prophet/${id}`, process.env.NEXT_PUBLIC_API_URL);
-	const response = await fetch(url, {
+	const url = new URL(`/api/prophet/${id}`, baseUrl);
+	const response = await fetch(url.toString(), {
 		cache: "no-store",
 	});
 
