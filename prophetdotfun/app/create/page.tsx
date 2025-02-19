@@ -15,9 +15,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CreateProphetInput } from "@/types/prophet";
 import type { Oracle } from "@/app/api/oracle/route";
 import { useAccount } from "wagmi";
+import { usePathname } from "next/navigation";
 
 export default function CreatePage() {
 	const { address } = useAccount();
+	const pathname = usePathname();
 	const [oracles, setOracles] = useState<Oracle[]>([]);
 	const [formData, setFormData] = useState<CreateProphetInput>({
 		sentence: "",
@@ -48,6 +50,16 @@ export default function CreatePage() {
 
 		fetchOracles();
 	}, []);
+
+	useEffect(() => {
+		const prophecyFromUrl = pathname?.split("/").pop();
+		if (prophecyFromUrl && prophecyFromUrl !== "create") {
+			setFormData((prev) => ({
+				...prev,
+				sentence: decodeURIComponent(prophecyFromUrl),
+			}));
+		}
+	}, [pathname]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
