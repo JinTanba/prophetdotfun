@@ -1,47 +1,42 @@
+import { NextRequest, NextResponse } from "next/server";
 import type { Prophet } from "@/types/prophet";
 
-const mockProphets: Record<string, Prophet> = {
-	"123e4567-e89b-12d3-a456-426614174000": {
-		id: "123e4567-e89b-12d3-a456-426614174000",
-		sentence:
-			"The US government is operating a global surveillance program targeting civilians",
-		bettingAmount: 1000,
-		oracle: "WikiLeaks",
-		targetDates: ["2025-03-21", "2025-05-21"],
-		creator: "Edward Snowden",
-		roi: 0,
-		entryPrice: 1000,
-		currentPrice: 1000,
-		leverage: 1.0,
-		isShort: false,
-		status: "PENDING",
-	},
-	test: {
-		id: "test",
-		sentence: "Major tech companies will face antitrust regulations worldwide",
-		bettingAmount: 500,
-		oracle: "WikiLeaks",
-		targetDate: "2025-05-21",
-		creator: "Julian Assange",
-		roi: 0,
-		entryPrice: 500,
-		currentPrice: 500,
-		leverage: 1.0,
-		isShort: false,
-		status: "PENDING",
-	},
-};
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export async function GET(
-	request: Request,
-	{ params }: { params: Promise<{ id: string }> }
-) {
-	const { id } = await params;
-	const prophet = mockProphets[id];
+export async function GET(request: NextRequest) {
+	const id = request.nextUrl.pathname.split("/").pop();
+	try {
+		// URLの構築を明示的に行う
+		const url = new URL(`/prophecies/${id}`, baseUrl);
+		console.log("Fetching from:", url.toString()); // デバッグ用
 
-	if (!prophet) {
-		return new Response(null, { status: 404 });
+		const response = await fetch(url.toString());
+
+		if (!response.ok) {
+			const error = await response.json();
+			return NextResponse.json(error, { status: response.status });
+		}
+
+		const data = await response.json();
+
+		// バックエンドのレスポンスをフロントエンドの型に変換
+		const prophet: Prophet = {
+			id: data.id,
+			text: data.sentence,
+			bettingAmount: data.betting_amount,
+			oracle: data.oracle,
+			targetDate: data.target_date,
+			targetDates: data.target_dates,
+			creator: data.creator,
+			status: data.status,
+		};
+
+		return NextResponse.json(prophet);
+	} catch (error) {
+		console.error("Error fetching prophet:", error);
+		return NextResponse.json(
+			{ detail: "Failed to fetch prophet" },
+			{ status: 500 }
+		);
 	}
-
-	return Response.json(prophet);
 }

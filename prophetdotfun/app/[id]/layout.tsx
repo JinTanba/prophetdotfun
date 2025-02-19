@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import type { Prophet } from "@/types/prophet";
 
-// baseUrlはOG画像用のみに使用
-const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 async function getProphet(id: string): Promise<Prophet> {
-	const url = new URL(`/api/prophet/${id}`, baseUrl);
-	const response = await fetch(url, {
+	const url = new URL(`/prophecies/${id}`, baseUrl);
+	const response = await fetch(url.toString(), {
 		cache: "no-store",
 	});
 
@@ -14,10 +13,21 @@ async function getProphet(id: string): Promise<Prophet> {
 		throw new Error("Failed to fetch prophet");
 	}
 
-	return response.json();
+	const data = await response.json();
+	
+	// バックエンドのレスポンスをフロントエンドの型に変換
+	return {
+		id: data.id,
+		text: data.sentence,
+		bettingAmount: data.betting_amount,
+		oracle: data.oracle,
+		targetDate: data.target_date,
+		targetDates: data.target_dates,
+		creator: data.creator,
+		status: data.status
+	};
 }
 
-// Next.js 15の型定義に合わせて修正
 export async function generateMetadata({
 	params,
 }: {
@@ -26,20 +36,21 @@ export async function generateMetadata({
 	try {
 		const { id } = await params;
 		const prophet = await getProphet(id);
-		const ogImageUrl = `${baseUrl}/api/og/${id}`;
+		const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+		const ogImageUrl = `${appUrl}/api/og/${id}`;
 
 		return {
-			title: `Prophet - ${prophet.sentence}`,
-			description: `Betting Amount: ${prophet.bettingAmount} USDC, ROI: ${prophet.roi}%`,
+			title: `Prophet - ${prophet.text}`,
+			description: `Betting Amount: ${prophet.bettingAmount} USDC`,
 			openGraph: {
-				title: `Prophet - ${prophet.sentence}`,
-				description: `Betting Amount: ${prophet.bettingAmount} USDC, ROI: ${prophet.roi}%`,
+				title: `Prophet - ${prophet.text}`,
+				description: `Betting Amount: ${prophet.bettingAmount} USDC`,
 				images: [ogImageUrl],
 			},
 			twitter: {
 				card: "summary_large_image",
-				title: `Prophet - ${prophet.sentence}`,
-				description: `Betting Amount: ${prophet.bettingAmount} USDC, ROI: ${prophet.roi}%`,
+				title: `Prophet - ${prophet.text}`,
+				description: `Betting Amount: ${prophet.bettingAmount} USDC`,
 				images: [ogImageUrl],
 			},
 		};
