@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 import logging
 from vector_store import SupabaseVectorStore
 from models import ProphecyCreate, Prophecy
+from web3 import Web3
+from eth_account import Account
+import json
 
 # 環境変数の読み込み
 load_dotenv()
@@ -58,39 +61,50 @@ class ProphecyCreate(BaseModel):
     creator: str
     status: str
 
+# Web3の設定
+web3 = Web3(Web3.HTTPProvider(os.getenv("WEB3_PROVIDER_URL")))
+prophet_contract = web3.eth.contract(
+    address=os.getenv("PROPHET_CONTRACT_ADDRESS"),
+    abi=json.loads(os.getenv("PROPHET_CONTRACT_ABI"))
+)
+
 @app.post("/prophecies")
 async def create_prophecy(prophecy: ProphecyCreate):
     try:
-        print("Received prophecy data:", prophecy.dict())
+        # USDCの承認トランザクション
+        usdc_contract = web3.eth.contract(
+            address=os.getenv("USDC_CONTRACT_ADDRESS"),
+            abi=json.loads(os.getenv("USDC_ABI"))
+        )
         
-        # バリデーション
-        if not prophecy.target_dates:
-            raise HTTPException(status_code=422, detail="少なくとも1つの対象日付が必要です")
+        # プロフェシーの作成トランザクション
+        tx_hash = prophet_contract.functions.createProphecy(
+            prophecy.sentence,
+            web3.to_wei(prophecy.betting_amount, 'ether'),
+            prophecy.oracle,
+            [int(date.timestamp()) for date in prophecy.target_dates]
+        ).transact({'from': prophecy.creator})
+        
+        # トランザクションの完了を待つ
+        receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        
+        if receipt.status == 1:
+            # NFTが正常にミントされた場合、ベクトルDBに保存
+            token_id = receipt.logs[0].topics[1]  # NFTのtokenIdを取得
             
-        # 日付形式の検証
-        try:
-            dates = [date.fromisoformat(date_str) for date_str in prophecy.target_dates]
-            if len(dates) == 2 and dates[0] > dates[1]:
-                raise HTTPException(status_code=422, detail="終了日は開始日より後である必要があります")
-        except ValueError:
-            raise HTTPException(status_code=422, detail="無効な日付形式です")
-
-        # データベースに保存
-        data = prophecy.dict()
-        response = supabase.table("prophecies").insert(data).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=500, detail="保存に失敗しました")
+            # ベクトルDBへの保存
+            await vector_store.store_vector(str(token_id), prophecy.sentence)
             
-        # ベクトルを保存
-        await vector_store.store_vector(prophecy.id, prophecy.sentence)
-        
-        return response.data[0]
-        
-    except HTTPException as he:
-        raise he
+            return {
+                "id": str(token_id),
+                "tx_hash": tx_hash.hex(),
+                "status": "success"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Transaction failed")
+            
     except Exception as e:
-        print("Error creating prophecy:", str(e))
+        logger.error(f"Error creating prophecy: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/prophecies/{prophecy_id}")
