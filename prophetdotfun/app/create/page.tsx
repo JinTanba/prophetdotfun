@@ -12,12 +12,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WalletConnectButton } from "@/components/WalletConnectButton";
 import type { CreateProphetInput } from "@/types/prophet";
 import type { Oracle } from "@/app/api/oracle/route";
+import { useAccount } from "wagmi";
 
 export default function CreatePage() {
-	const [walletAddress, setWalletAddress] = useState<string>("");
+	const { address } = useAccount();
 	const [oracles, setOracles] = useState<Oracle[]>([]);
 	const [formData, setFormData] = useState<CreateProphetInput>({
 		sentence: "",
@@ -33,7 +33,6 @@ export default function CreatePage() {
 				const response = await fetch("/api/oracle");
 				const data = await response.json();
 				setOracles(data);
-				// 最初のオラクルをデフォルト値として設定
 				if (data.length > 0) {
 					setFormData((prev) => ({
 						...prev,
@@ -41,7 +40,7 @@ export default function CreatePage() {
 					}));
 				}
 			} catch (error) {
-				console.error("オラクルの取得に失敗しました:", error);
+				console.error("Failed to fetch oracles:", error);
 			} finally {
 				setIsLoading(false);
 			}
@@ -52,17 +51,16 @@ export default function CreatePage() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!walletAddress) {
-			alert("ウォレットを接続してください");
+		if (!address) {
+			alert("Please connect your wallet");
 			return;
 		}
 
 		try {
-			// TODO: スマートコントラクトとの連携処理
-			console.log("送信データ:", formData);
+			console.log("Submission data:", formData);
 		} catch (error) {
-			console.error("送信エラー:", error);
-			alert("予言の作成に失敗しました");
+			console.error("Submission error:", error);
+			alert("Failed to create prophecy");
 		}
 	};
 
@@ -86,22 +84,33 @@ export default function CreatePage() {
 			targetDate: new Date(e.target.value),
 		});
 
+	if (!address) {
+		return (
+			<div className="container mx-auto max-w-2xl p-6">
+				<Card>
+					<CardHeader>
+						<CardTitle>Create Prophecy</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<p className="text-center text-muted-foreground">
+							Please connect your wallet to create prophecies
+						</p>
+					</CardContent>
+				</Card>
+			</div>
+		);
+	}
+
 	return (
 		<div className="container mx-auto max-w-2xl p-6">
 			<Card>
 				<CardHeader>
-					<CardTitle>予言を作成</CardTitle>
+					<CardTitle>Create Prophecy</CardTitle>
 				</CardHeader>
 				<CardContent>
-					{!walletAddress && (
-						<div className="mb-6">
-							<WalletConnectButton onConnect={setWalletAddress} />
-						</div>
-					)}
-
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="space-y-2">
-							<label htmlFor="sentence">予言文 (140文字以内)</label>
+							<label htmlFor="sentence">Prophecy (140 characters max)</label>
 							<Textarea
 								id="sentence"
 								value={formData.sentence}
@@ -112,7 +121,7 @@ export default function CreatePage() {
 						</div>
 
 						<div className="space-y-2">
-							<label htmlFor="bettingAmount">賭け金額 (USDC)</label>
+							<label htmlFor="bettingAmount">Betting Amount (USDC)</label>
 							<Input
 								id="bettingAmount"
 								type="number"
@@ -123,9 +132,9 @@ export default function CreatePage() {
 						</div>
 
 						<div className="space-y-2">
-							<label>オラクル選択</label>
+							<label>Select Oracle</label>
 							{isLoading ? (
-								<div>読み込み中...</div>
+								<div>Loading...</div>
 							) : (
 								<Select
 									value={formData.oracle}
@@ -137,7 +146,7 @@ export default function CreatePage() {
 									}
 								>
 									<SelectTrigger>
-										<SelectValue placeholder="オラクルを選択" />
+										<SelectValue placeholder="Select an oracle" />
 									</SelectTrigger>
 									<SelectContent>
 										{oracles.map((oracle) => (
@@ -151,7 +160,7 @@ export default function CreatePage() {
 						</div>
 
 						<div className="space-y-2">
-							<label htmlFor="targetDate">予言の対象日</label>
+							<label htmlFor="targetDate">Target Date</label>
 							<Input
 								id="targetDate"
 								type="date"
@@ -161,8 +170,8 @@ export default function CreatePage() {
 							/>
 						</div>
 
-						<Button type="submit" className="w-full" disabled={!walletAddress}>
-							予言を作成
+						<Button type="submit" className="w-full">
+							Create Prophecy
 						</Button>
 					</form>
 				</CardContent>
