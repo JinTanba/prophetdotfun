@@ -8,7 +8,25 @@ interface ProphetClientProps {
 	prophet: Prophet;
 }
 
+function formatDateRange(dates: string[] | undefined) {
+	if (!dates || dates.length === 0) {
+		return "Not specified";
+	}
+	if (dates.length === 1) {
+		return dates[0];
+	}
+	return `${dates[0]} 〜 ${dates[1]}`;
+}
+
 export default function ProphetClient({ prophet }: ProphetClientProps) {
+	// バックエンドのレスポンスをフロントエンドの型に合わせて変換
+	const displayProphet = {
+		...prophet,
+		text: prophet.text || prophet.sentence || "",
+		bettingAmount: prophet.bettingAmount || prophet.betting_amount || 0,
+		targetDate: prophet.targetDate || prophet.target_date || "",
+	};
+
 	return (
 		<div className="container mx-auto max-w-2xl p-6">
 			<Card className="bg-slate-900 text-white overflow-hidden">
@@ -23,28 +41,31 @@ export default function ProphetClient({ prophet }: ProphetClientProps) {
 								className="rounded-full object-cover"
 							/>
 						</div>
-						<div className="text-4xl font-bold">{prophet.creator}</div>
+						<div className="text-4xl font-bold">{displayProphet.creator}</div>
 					</div>
 
 					{/* 予言内容 */}
 					<div className="text-5xl font-bold leading-tight">
-						{prophet.sentence}
+						{displayProphet.text}
 					</div>
 
 					{/* 賭け金額 */}
 					<div className="text-6xl font-bold text-green-500">
-						${prophet.bettingAmount.toLocaleString()}
+						${displayProphet.bettingAmount.toLocaleString()}
 					</div>
 
 					{/* フッター情報 */}
 					<div className="flex justify-between items-center pt-4">
 						<div className="text-slate-400 text-xl">
 							Target Date
-							{(prophet.targetDates ?? []).length > 1 ? "s" : ""}:{" "}
-							{prophet.targetDates?.join(" ~ ") ?? prophet.targetDate}
+							{displayProphet.targetDates &&
+							displayProphet.targetDates.length > 1
+								? "s"
+								: ""}
+							: {formatDateRange(displayProphet.targetDates)}
 						</div>
 						<div className="px-6 py-3 bg-yellow-500/20 text-yellow-500 rounded-full text-xl font-bold">
-							{prophet.status}
+							{displayProphet.status}
 						</div>
 					</div>
 				</CardContent>
