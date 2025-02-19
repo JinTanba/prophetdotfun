@@ -4,10 +4,11 @@ import type { Prophet } from "@/types/prophet";
 export const runtime = "edge";
 
 // 画像のベースURLを設定
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-// 画像をBase64で埋め込む
-const imageData = `data:image/png;base64,...`; // 実際のBase64エンコードされた画像データ
-
+// デフォルトのアバター画像URL（一時的な対応として）
+const defaultAvatarUrl = "https://avatar.vercel.sh/prophet";
+// const demoAvatarUrl = "/image.png";
 // コンポーネントを直接定義
 function OGImage({ src, alt }: { src: string; alt: string }) {
 	return (
@@ -30,9 +31,9 @@ export async function GET(
 ) {
 	try {
 		const { id } = await params;
-		const response = await fetch(
-			`${process.env.NEXT_PUBLIC_API_URL}/api/prophet/${id}`
-		);
+		const url = new URL(`/api/prophet/${id}`, baseUrl);
+		const response = await fetch(url.toString());
+
 		if (!response.ok) {
 			return new Response(`Prophet not found`, { status: 404 });
 		}
@@ -66,7 +67,7 @@ export async function GET(
 								gap: "24px",
 							}}
 						>
-							<OGImage src={imageData} alt="" />
+							<OGImage src={defaultAvatarUrl} alt="" />
 							<div
 								style={{
 									display: "flex",
