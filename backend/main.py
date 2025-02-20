@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime, date
 from typing import Optional, List
 import uuid
@@ -53,56 +53,102 @@ class Prophet(BaseModel):
     status: str = "PENDING"  # "PENDING" | "VERIFIED" | "FAILED"
 
 class ProphecyCreate(BaseModel):
-    id: str
     sentence: str
     betting_amount: float
     oracle: str
-    target_dates: List[str]  # 複数の日付を受け取れるように変更
+    target_dates: List[str]
     creator: str
-    status: str
+    status: str = "PENDING"
+    tx_hash: str
+
+    @validator('sentence')
+    def validate_sentence(cls, v):
+        if len(v) == 0:
+            raise ValueError("Sentence cannot be empty")
+        if len(v) > 140:
+            raise ValueError("Sentence must be 140 characters or less")
+        return v
+
+    @validator('betting_amount')
+    def validate_betting_amount(cls, v):
+        if v <= 0:
+            raise ValueError("Betting amount must be greater than 0")
+        return v
+
+    @validator('target_dates')
+    def validate_target_dates(cls, v):
+        if not v or len(v) == 0:
+            raise ValueError("At least one target date is required")
+        if len(v) > 2:
+            raise ValueError("Maximum 2 target dates are allowed")
+        
+        # 日付形式の検証
+        for date_str in v:
+            try:
+                datetime.strptime(date_str, '%Y-%m-%d')
+            except ValueError:
+                raise ValueError(f"Invalid date format: {date_str}. Use YYYY-MM-DD")
+            
+            # 過去の日付はNG
+            if datetime.strptime(date_str, '%Y-%m-%d').date() < date.today():
+                raise ValueError("Target date cannot be in the past")
+
+        # 日付の順序を検証（2つの日付がある場合）
+        if len(v) == 2:
+            start_date = datetime.strptime(v[0], '%Y-%m-%d')
+            end_date = datetime.strptime(v[1], '%Y-%m-%d')
+            if start_date > end_date:
+                raise ValueError("End date must be after start date")
+
+        return v
+
+    @validator('oracle')
+    def validate_oracle(cls, v):
+        valid_oracles = ["BBC", "AP", "COINDESK"]  # 有効なオラクルのリスト
+        if v not in valid_oracles:
+            raise ValueError(f"Invalid oracle. Must be one of: {', '.join(valid_oracles)}")
+        return v
 
 # Web3の設定
 web3 = Web3(Web3.HTTPProvider(os.getenv("WEB3_PROVIDER_URL")))
+
+# アドレスをチェックサムアドレスに変換
+prophet_address = web3.to_checksum_address(os.getenv("PROPHET_CONTRACT_ADDRESS"))
+usdc_address = web3.to_checksum_address(os.getenv("USDC_CONTRACT_ADDRESS"))
+
+# コントラクトのインスタンス化
 prophet_contract = web3.eth.contract(
-    address=os.getenv("PROPHET_CONTRACT_ADDRESS"),
+    address=prophet_address,
     abi=json.loads(os.getenv("PROPHET_CONTRACT_ABI"))
 )
 
 @app.post("/prophecies")
 async def create_prophecy(prophecy: ProphecyCreate):
     try:
-        # USDCの承認トランザクション
-        usdc_contract = web3.eth.contract(
-            address=os.getenv("USDC_CONTRACT_ADDRESS"),
-            abi=json.loads(os.getenv("USDC_ABI"))
-        )
+        # Supabaseにデータを保存
+        prophecy_data = {
+            "id": prophecy.id,
+            "sentence": prophecy.sentence,
+            "betting_amount": prophecy.betting_amount,
+            "oracle": prophecy.oracle,
+            "target_dates": prophecy.target_dates,
+            "creator": web3.to_checksum_address(prophecy.creator),  # creatorアドレスもチェックサム化
+            "status": prophecy.status,
+            "tx_hash": prophecy.tx_hash
+        }
         
-        # プロフェシーの作成トランザクション
-        tx_hash = prophet_contract.functions.createProphecy(
-            prophecy.sentence,
-            web3.to_wei(prophecy.betting_amount, 'ether'),
-            prophecy.oracle,
-            [int(date.timestamp()) for date in prophecy.target_dates]
-        ).transact({'from': prophecy.creator})
+        result = supabase.table("prophecies").insert(prophecy_data).execute()
         
-        # トランザクションの完了を待つ
-        receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        # ベクトルDBへの保存
+        await vector_store.store_vector(prophecy.id, prophecy.sentence)
         
-        if receipt.status == 1:
-            # NFTが正常にミントされた場合、ベクトルDBに保存
-            token_id = receipt.logs[0].topics[1]  # NFTのtokenIdを取得
-            
-            # ベクトルDBへの保存
-            await vector_store.store_vector(str(token_id), prophecy.sentence)
-            
-            return {
-                "id": str(token_id),
-                "tx_hash": tx_hash.hex(),
-                "status": "success"
-            }
-        else:
-            raise HTTPException(status_code=500, detail="Transaction failed")
-            
+        return {
+            "status": "success",
+            "id": prophecy.id
+        }
+    except ValidationError as e:
+        logger.error(f"Validation error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error creating prophecy: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

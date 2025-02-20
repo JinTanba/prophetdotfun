@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -12,5 +12,9 @@ contract FaucetUSDC is ERC20 {
 
     function faucet() external {
         _mint(msg.sender, 1000 * 10**6);
+    }
+
+    function mint() public {
+        _mint(msg.sender, 5000 * 10**6); // 5000 USDC (6 decimals)
     }
 } 
