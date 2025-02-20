@@ -1,67 +1,82 @@
-■ プロダクトビジョン
-「ユーザー自身が未来を予言し、自腹で賭けた予言が、AI× オラクルによってフェアに評価されるシステム」を通して、従来の予測市場の待機時間や流動性問題を解決する。
-ユーザー価値: 自分の予言に責任を持ちつつ、同テーマ内でリアルタイムな評価と NFT としての証明が得られる体験。
+# Prophetdotfun
 
-■ ユーザーストーリー（Epic）
-予言投稿のユーザーストーリー
+## About
+- Shourt Summary: A platform for users to make prophecies and stake their own money in Natural Language like a twitter.
 
-ユーザー: 一般ユーザー／未来予言家
-目的: ウォレット接続後、予言（テキスト、日付、USDC、参照ドメイン）を投稿し、NFT（SBT）として記録する
-受け入れ基準:
-ウォレット接続が確実に行える
-予言入力フォームからの情報送信後、NFT 発行（画面上またはブロックチェーン上で記録）が確認できる
-予言決済・オラクル処理のユーザーストーリー
+# Deck
+https://www.canva.com/design/DAGfiECgplo/YcpxgyWxZ7mUY5HCH7ngGA/edit?utm_content=DAGfiECgplo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
-ユーザー: 予言を利確したいユーザー
-目的: Redeem ページでガス代を支払い、モックされたオラクル（CNN/BBC/coincheck）データを参照し、同テーマ予言間の比較結果に基づく決済処理を実行する
-受け入れ基準:
-Redeem ページでオラクルシミュレーションが呼び出され、決済処理の結果が表示される
-同テーマ予言同士の比較（モックでの類似検索）が実行される
-■ 技術仕様（概要）
-フロントエンド:
-フレームワーク：React（または Next.js）
-UI ライブラリ：Material-UI / Tailwind CSS（シンプルなデザイン重視）
-ウォレット連携：WalletConnect（MetaMask 連携も可能）
-バックエンド／ブロックチェーン
-シンプルなスマートコントラクト（テストネット上で NFT（SBT）発行）
-オラクルシミュレーション：ダミー関数で固定レスポンスを返却
-（ベクトル化・類似予言検索）：モックデータを利用して、画面上にシンプルな 2D/3D マップ（固定サンプルデータ）を表示
-外部 API:
-ホワイトリストのオラクル情報は、固定値または簡易 API シミュレーションで実装
-■ MVP（Minimum Viable Product）機能
-予言ページ：
-ウォレット接続
-予言入力フォーム（タイトル、テキスト、ターゲット日付、USDC、参照ドメイン）
-送信後の NFT（SBT）発行（画面表示またはブロックチェーントランザクション）
-Redeem ページ：
-オラクル呼び出しのシミュレーション（ダミーデータ）
-同テーマ予言の類似検索（モック実装）
-決済処理のシミュレーション（結果表示＆資金移動イメージ）
-■ 追加機能（時間が余れば）
-実際のベクトル計算・次元削減を用いた予言の動的マッピング
-詳細なオラクル判定ロジック（NLP/NLI による評価）
-マルチチェーン対応や実際のガス代計算
-■ 開発のアジャイルプロセス
-スプリントプラン:
+# Demo
+## user experience
+1. create prophecy
+![creation demo](./creationdemo.mov)
 
-スプリント 1 (前半 6 時間)：環境構築、基本 UI（予言ページ）の実装、ウォレット連携
-スプリント 2 (次の 4 時間)：NFT 発行機能の実装、Redeem ページの初期構築
-スプリント 3 (中盤 4 時間)：オラクル＆類似検索のモック実装、連携テスト
-スプリント 4 (後半 6 時間)：統合テスト、バグフィックス、UI 調整、プレゼン資料作成
-最終 1 時間：リハーサル、最終チェック、デプロイ
-タスク管理:
+2. share prophecy
+![share prophecy](./sharedemo.png)
 
-GitHub Issue / Trello 等でタスクを可視化し、各タスクの優先順位と担当を明記
-定期的（2 ～ 3 時間ごと）のチーム内短い進捗ミーティング（またはチャットで状況共有）
-■ ハッカソン受賞戦略の準備
-プレゼン資料:
-プロダクトの社会的意義、ユニークな価値提案（「自分の予言に自腹で賭ける」点）を強調
-デモ動画／ライブデモで、予言投稿 →NFT 発行 →Redeem での決済シミュレーションの流れを明確に
-審査基準対応:
-Execution: 完成度とスムーズなユーザー体験をアピール
-Usefulness: 既存の予測市場の課題解決としてのメリットを説明
-Learning: 新しいブロックチェーン連携技術や AI オラクルの挑戦を強調
-Deployment: 実際に動くプロトタイプ（デモ環境）を提示
+3. redeem or execute prophecy
+![redeem or execute prophecy](./redeem.png)
+
+---
+## simulation
+1. next iphone 16 people prediction in vector db
+![people prediction](./newplot.png)
+
+2. oracle sentence is set to "next iphone 16 people prediction"
+![oracle sentence](./newplot1.png)
+
+3. transfer people's deposit token to the contract address by admin
+![oracle call simulation](./newplot2.png)
+
+
+# Description
+
+■ Product Vision
+Through a "system where users make prophecies about the future and stake their own money, which is then fairly evaluated by AI × Oracle", we aim to solve the waiting time and liquidity problems of traditional prediction markets.
+User Value: An experience where users can take responsibility for their prophecies while getting real-time evaluation and NFT proof within the same theme.
+
+■ User Stories (Epic)
+Prophecy Posting User Story
+
+User: General User / Future Prophet
+Purpose: After connecting wallet, post prophecy (text, date, USDC, reference domain) and record as NFT (SBT)
+Acceptance Criteria:
+- Wallet connection can be done reliably
+- After submitting information through prophecy input form, NFT issuance can be confirmed (on screen or blockchain)
+
+Prophecy Settlement & Oracle Processing User Story
+
+User: User wanting to realize prophecy
+Purpose: Pay gas fee on Redeem page, reference mocked oracle (CNN/BBC/coincheck) data, execute settlement based on comparison results between prophecies of same theme
+Acceptance Criteria:
+- Oracle simulation can be called on Redeem page and settlement results displayed
+- Comparison between prophecies of same theme (mock similarity search) is executed
+
+■ Technical Specifications (Overview)
+Frontend:
+- Framework: React (or Next.js)
+- UI Library: Material-UI / Tailwind CSS (emphasis on simple design)
+- Wallet Integration: WalletConnect (MetaMask compatible)
+
+Backend/Blockchain:
+- Simple smart contract (NFT/SBT issuance on testnet)
+- Oracle Simulation: Return fixed responses with dummy functions
+- (Vectorization & Similar Prophecy Search): Display simple 2D/3D map (fixed sample data) on screen using mock data
+
+External API:
+- Whitelisted oracle information implemented with fixed values or simple API simulation
+
+■ MVP (Minimum Viable Product) Features
+Prophecy Page:
+- Wallet connection
+- Prophecy input form (title, text, target date, USDC, reference domain)
+- NFT (SBT) issuance after submission (screen display or blockchain transaction)
+
+Redeem Page:
+- Oracle call simulation (dummy data)
+- Similar prophecy search within same theme (mock implementation)
+- Settlement process simulation (result display & fund movement image)
+
 
 ---
 
@@ -71,54 +86,54 @@ Deployment: 実際に動くプロトタイプ（デモ環境）を提示
 
 ```
 sequenceDiagram
-    participant U as ユーザー
-    participant FE as フロントエンド
-    participant WC as ウォレット (MetaMask/WalletConnect)
-    participant SC as スマートコントラクト
-    participant BC as ブロックチェーン
+    participant U as User
+    participant FE as Frontend
+    participant WC as Wallet (MetaMask/WalletConnect)
+    participant SC as Smart Contract
+    participant BC as Blockchain
     participant VDB as Vector DB
 
-    U->>FE: ウォレット接続要求
-    FE->>WC: 接続リクエスト送信
-    WC-->>FE: 接続成功
-    FE->>U: ウォレット接続完了表示
+    U->>FE: Request wallet connection
+    FE->>WC: Send connection request
+    WC-->>FE: Connection success
+    FE->>U: Display wallet connection complete
 
-    U->>FE: 予言入力フォームに情報入力\n(タイトル、テキスト、ターゲット日付、USDC、参照ドメイン)
-    FE->>SC: createProphet() 呼び出し（入力情報を引数に）
-    SC->>BC: NFT（SBT）発行トランザクション開始
-    BC-->>SC: トランザクション完了（確認）
-    SC-->>FE: 発行済みNFT情報（tokenId, txハッシュ）返却
+    U->>FE: Input prophecy form information\n(title, text, target date, USDC, reference domain)
+    FE->>SC: Call createProphet() (with input info as args)
+    SC->>BC: Start NFT (SBT) issuance transaction
+    BC-->>SC: Transaction complete (confirmation)
+    SC-->>FE: Return issued NFT info (tokenId, txHash)
 
-    FE->>FE: 予言テキストからベクトル計算 & ハッシュ生成
-    FE->>VDB: ベクトル、ハッシュ、tokenId等を登録
-    VDB-->>FE: 登録完了通知
+    FE->>FE: Calculate vector & generate hash from prophecy text
+    FE->>VDB: Register vector, hash, tokenId etc.
+    VDB-->>FE: Registration complete notification
 
-    FE->>U: NFT発行完了＆記録完了表示
+    FE->>U: Display NFT issuance & recording complete
 ```
 
 ## Prophet Redeem
 
 ```sequenceDiagram
-    participant U as ユーザー
-    participant FE as フロントエンド（Redeemページ）
-    participant OS as オラクルシミュレーター
+    participant U as User
+    participant FE as Frontend (Redeem page)
+    participant OS as Oracle Simulator
     participant VDB as Vector DB
-    participant SC as スマートコントラクト
-    participant BC as ブロックチェーン
+    participant SC as Smart Contract
+    participant BC as Blockchain
 
-    U->>FE: 「Redeem」ボタン押下（利確開始）
-    FE->>U: ガス代支払い確認のプロンプト表示
-    U->>FE: ガス代支払い確認
-    FE->>OS: オラクルシミュレーション呼び出し
-    OS-->>FE: 固定レスポンス返却\n(例: CNN/BBC/coincheckデータ)
+    U->>FE: Click "Redeem" button (start realization)
+    FE->>U: Display gas fee payment prompt
+    U->>FE: Confirm gas fee payment
+    FE->>OS: Call oracle simulation
+    OS-->>FE: Return fixed response\n(e.g. CNN/BBC/coincheck data)
 
-    FE->>VDB: 同テーマ予言の類似検索リクエスト\n(コサイン類似度計算＋ハッシュ検証)
-    VDB-->>FE: 類似予言データ返却
+    FE->>VDB: Similar prophecy search request\n(cosine similarity calculation + hash verification)
+    VDB-->>FE: Return similar prophecy data
 
-    FE->>SC: redeemProphet() 呼び出し\n(オラクル＆類似検索結果を添付)
-    SC->>BC: 決済トランザクション実行（資金移動シミュレーション）
-    BC-->>SC: トランザクション確認
-    SC-->>FE: 決済処理結果返却
+    FE->>SC: Call redeemProphet()\n(attach oracle & similar search results)
+    SC->>BC: Execute settlement transaction (fund movement simulation)
+    BC-->>SC: Transaction confirmation
+    SC-->>FE: Return settlement process result
 
-    FE->>U: 決済結果＆更新情報を表示
+    FE->>U: Display settlement result & updated information
 ```
