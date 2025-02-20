@@ -3,17 +3,19 @@
 ## About
 - Shourt Summary: A platform for users to make prophecies and stake their own money in Natural Language like a twitter.
 
+# Deck
+https://www.canva.com/design/DAGfiECgplo/YcpxgyWxZ7mUY5HCH7ngGA/edit?utm_content=DAGfiECgplo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 # Demo
 ## user experience
 1. create prophecy
-![create prophecy](./newplot3.png)
+![creation demo](./creationdemo.mov)
 
 2. share prophecy
-![share prophecy](./newplot4.png)
+![share prophecy](./sharedemo.png)
 
 3. redeem or execute prophecy
-![redeem or execute prophecy](./newplot5.png)
+![redeem or execute prophecy](./redeem.png)
 
 ---
 ## simulation
