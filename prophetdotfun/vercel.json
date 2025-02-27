@@ -1,5 +1,5 @@
 {
   "buildCommand": "next build",
-  "ignoreCommand": "echo 'Skipping linting'",
+  "ignoreCommand": "exit 1",
   "framework": "nextjs"
 }
