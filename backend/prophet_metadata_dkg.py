@@ -10,9 +10,9 @@ from dotenv import load_dotenv
 
 PROPHET_JSONLD_CONTEXT = {
     "@vocab": "https://schema.org/",
-    "prophet": "https://github.com/yourusername/prophet-project/blob/main/ontology/terms.md#prophet",
-    "embededProphet": "https://github.com/yourusername/prophet-project/blob/main/ontology/terms.md#embededProphet",
-    "embededProphetHash": "https://github.com/yourusername/prophet-project/blob/main/ontology/terms.md#embededProphetHash"
+    "prophet": "https://github.com/JinTanba/prophetdotfun/blob/main/backend/ontology/terms.md",
+    "embededProphet": "https://github.com/JinTanba/prophetdotfun/blob/main/backend/ontology/terms.md",
+    "embededProphetHash": "https://github.com/JinTanba/prophetdotfun/blob/main/backend/ontology/terms.md"
 }
 
 DEFAULT_ASSET_OPTIONS = {
