@@ -382,7 +382,7 @@ export default function CreatePage() {
 	// アドレスまたはpublicClientが変更されたときに残高を更新
 	useEffect(() => {
 		fetchUsdcBalance();
-	}, [address, publicClient]);
+	}, [address, publicClient, fetchUsdcBalance]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

@@ -31,13 +31,17 @@ export default async function RootLayout({
 
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
         <WagmiProvider cookies={cookies}>
-          <Header />
-          <MapWrapper />
-          <main className="min-h-screen">
-            {children}
-          </main>
+          {/* 3Dマップを背景として配置 */}
+          <div className="fixed inset-0 z-0">
+            <MapWrapper />
+          </div>
+          
+          {/* ヘッダーとコンテンツを前面に配置 */}
+          <div className="relative z-10">
+            <Header />
+          </div>
         </WagmiProvider>
       </body>
     </html>

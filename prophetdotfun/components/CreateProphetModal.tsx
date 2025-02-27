@@ -338,6 +338,25 @@ export function CreateProphetModal({ trigger, initialSentence = "" }: CreateProp
   const [usdcBalance, setUsdcBalance] = useState<string>("0");
   const [open, setOpen] = useState(false);
 
+  // USDC残高を取得する関数
+  const fetchUsdcBalance = async () => {
+    if (!address || !publicClient) return;
+
+    try {
+      const balance = await publicClient.readContract({
+        address: USDC_ADDRESS,
+        abi: USDC_ABI,
+        functionName: "balanceOf",
+        args: [address],
+      });
+
+      // USDCは6桁なので、1_000_000で割る
+      setUsdcBalance((Number(balance) / 1_000_000).toString());
+    } catch (error) {
+      console.error("Failed to fetch USDC balance:", error);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       const fetchOracles = async () => {
@@ -361,26 +380,7 @@ export function CreateProphetModal({ trigger, initialSentence = "" }: CreateProp
       fetchOracles();
       fetchUsdcBalance();
     }
-  }, [open]);
-
-  // USDC残高を取得する関数
-  const fetchUsdcBalance = async () => {
-    if (!address || !publicClient) return;
-
-    try {
-      const balance = await publicClient.readContract({
-        address: USDC_ADDRESS,
-        abi: USDC_ABI,
-        functionName: "balanceOf",
-        args: [address],
-      });
-
-      // USDCは6桁なので、1_000_000で割る
-      setUsdcBalance((Number(balance) / 1_000_000).toString());
-    } catch (error) {
-      console.error("Failed to fetch USDC balance:", error);
-    }
-  };
+  }, [open, fetchUsdcBalance, address, publicClient]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

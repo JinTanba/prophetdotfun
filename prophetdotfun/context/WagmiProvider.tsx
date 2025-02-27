@@ -17,7 +17,7 @@ const metadata = {
 
 export const modal = createAppKit({
 	adapters: [wagmiAdapter],
-	projectId,
+	projectId: projectId as string,
 	networks: [moonbaseAlpha],
 	defaultNetwork: moonbaseAlpha,
 	metadata,

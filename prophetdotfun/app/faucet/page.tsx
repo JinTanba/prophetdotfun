@@ -78,7 +78,7 @@ export default function FaucetPage() {
 	// アドレスまたはpublicClientが変更されたときに残高を更新
 	useEffect(() => {
 		fetchUsdcBalance();
-	}, [address, publicClient]);
+	}, [address, publicClient, fetchUsdcBalance]);
 
 	const handleMint = async () => {
 		if (!address || !walletClient) {
