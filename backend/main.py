@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, validator
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import uuid
 from supabase import create_client, Client
 import os
@@ -13,6 +13,8 @@ from models import ProphecyCreate, Prophecy
 from web3 import Web3
 from eth_account import Account
 import json
+from prophet import Prophet
+from prophet_metadata_dkg import create_knowledge
 
 # 環境変数の読み込み
 load_dotenv()
@@ -42,6 +44,9 @@ app.add_middleware(
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Prophetインスタンスの初期化
+prophet_instance = Prophet()
+
 class Prophet(BaseModel):
     id: str
     sentence: str
@@ -51,6 +56,10 @@ class Prophet(BaseModel):
     targetDates: Optional[List[datetime]] = None
     creator: str
     status: str = "PENDING"  # "PENDING" | "VERIFIED" | "FAILED"
+
+class AddToDKGRequest(BaseModel):
+    prophecy_id: str
+    options: Optional[Dict[str, Any]] = None
 
 class ProphecyCreate(BaseModel):
     sentence: str
@@ -193,6 +202,50 @@ async def get_similar_prophecies(prophecy_id: str, limit: int = 5):
         logger.error(f"Error finding similar prophecies: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/add-to-dkg")
+async def add_to_dkg(request: AddToDKGRequest):
+    """
+    指定された予言をDKG（Distributed Knowledge Graph）に追加します。
+    
+    Args:
+        request: AddToDKGRequest - 予言IDとオプションのDKGオプション
+        
+    Returns:
+        UAL（Uniform Asset Locator）- DKGに追加されたアセットの識別子
+        
+    Raises:
+        HTTPException: 予言が見つからない場合や、DKGへの追加に失敗した場合
+    """
+    try:
+        logger.debug(f"Adding prophecy with ID {request.prophecy_id} to DKG")
+        
+        result = supabase.table("prophecies").select("*").eq("id", request.prophecy_id).execute()
+        
+        if not result.data or len(result.data) == 0:
+            logger.warning(f"Prophecy not found with ID: {request.prophecy_id}")
+            raise HTTPException(status_code=404, detail="Prophecy not found")
+            
+        prophecy = result.data[0]
+        logger.debug(f"Found prophecy: {prophecy}")
+        
+        # 予言データを生成
+        prophet_data = prophet_instance.generate_prophet_data(prophecy["sentence"])
+        logger.debug(f"Generated prophet data with hash: {prophet_data['embededProphetHash']}")
+        
+        
+        ual = create_knowledge(prophet_data, request.options)
+        logger.info(f"Successfully added prophecy to DKG with UAL: {ual}")
+        
+        # 結果を返す
+        return {
+            "status": "success",
+            "prophecy_id": request.prophecy_id,
+            "ual": ual
+        }
+    except Exception as e:
+        logger.error(f"Error adding prophecy to DKG: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)
